@@ -37,6 +37,12 @@ setup(
     entry_points={
         'xblock.v1': [
             'eolcourseprogram = eolcourseprogram:EolCourseProgramXBlock',
+        ],
+        "lms.djangoapp": [
+            "eolcourseprogram = eolcourseprogram.apps:EolCourseProgramConfig",
+        ],
+        "cms.djangoapp": [
+            "eolcourseprogram = eolcourseprogram.apps:EolCourseProgramConfig",
         ]
     },
     package_data=package_data("eolcourseprogram", ["static", "public"]),
