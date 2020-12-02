@@ -4,44 +4,33 @@ import json
 
 from django.http import HttpResponse, JsonResponse
 
+from .models import EolCourseProgram
+
 import logging
 logger = logging.getLogger(__name__)
 
-EXAMPLE_COURSE_PROGRAMS = [
-    {
-        "program_name"  : "PROGRAM NAME 1",
-        "courses"       : [
-            "Course Name 1",
-            "Course Name 2",
-            "COurse Name 3"
-        ]
-    },
-    {
-        "program_name"  : "PROGRAM NAME 2",
-        "courses"       : [
-            "Course Name 4",
-            "Course Name 5",
-            "COurse Name 2"
-        ]
-    },
-    {
-        "program_name"  : "PROGRAM NAME 3",
-        "courses"       : [
-            "Course Name 1",
-            "Course Name 4",
-            "COurse Name 6"
-        ]
-    }
-]
-
-def get_course_programs(request):
+def get_course_programs(request, course_id):
     """
         GET REQUEST
-        Get all course programs
+        Get course programs that contains course_id 
     """
     # check method
     if request.method != "GET":
         return HttpResponse(status=400)
     user = request.user
-    logger.warning("{} get_course_programs".format(user.username))
-    return JsonResponse(EXAMPLE_COURSE_PROGRAMS, safe=False)
+
+    course_programs = EolCourseProgram.objects.filter(
+        courses__id__in=[course_id],
+        is_active = True
+    )
+
+    course_programs_list = [
+        {
+            'program_id'    : cp.pk,
+            'program_name'  : cp.program_name,
+            'courses_list'  : cp.courses_list
+        }
+        for cp in course_programs
+    ]
+    data = course_programs_list
+    return JsonResponse(data, safe=False)
