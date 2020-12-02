@@ -1,1 +1,12 @@
 /* CSS for EolCourseProgramXBlock */
+
+#settings-tab .course_programs {
+    width: 45%;
+    margin-left: calc(25% + 15px);
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+#settings-tab ol {
+    list-style-type: decimal-leading-zero;
+}

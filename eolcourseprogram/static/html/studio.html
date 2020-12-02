@@ -1,12 +1,23 @@
 {% load i18n %}
-<div class="wrapper-comp-settings is-active editor-with-buttons" id="settings-tab">
+<div class="loading ui-loading" id="course_program_loading">
+  <p><span class="spin"><span class="icon fa fa-refresh" aria-hidden="true"></span></span> <span class="copy">Cargando</span></p>
+</div>
+<div class="wrapper-comp-settings is-active editor-with-buttons course_program_studio" id="settings-tab">
   <ul class="list-input settings-list">
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
         <label class="label setting-label" for="program_id">{% trans field_program_id.display_name %}</label>
-        <input class="input setting-input" name="program_id" id="program_id" value="{{xblock.program_id}}" type="number" />
+        <select class="input setting-input" id="course_programs_list">
+          <option disabled selected>Selecciona un Programa</option>
+        </select>
       </div>
       <span class="tip setting-help">{% trans field_program_id.help %}</span>
+    </li>
+    <li class="field comp-setting-entry is-set" style="border:none; padding-top:0px;">
+      <div class="wrapper-comp-setting course_programs">
+        <ol id="courses_list">
+        </ol>
+      </div>
     </li>
   </ul>
   <div class="xblock-actions">

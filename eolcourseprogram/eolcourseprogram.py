@@ -4,6 +4,9 @@ from webob import Response
 from xblock.core import XBlock
 from xblock.fields import Integer, String, Scope
 from xblock.fragment import Fragment
+from django.urls import reverse
+
+from six import text_type
 
 # Make '_' a no-op so we can scrape strings
 _ = lambda text: text
@@ -22,7 +25,7 @@ class EolCourseProgramXBlock(XBlock):
     )
     program_id = Integer(
         display_name = _("Programa"),
-        help = _("Selecciona el programa"),
+        help = _("Al seleccionar un programa se desplegará el listado de cursos asociados."),
         scope = Scope.settings
     )
 
@@ -46,7 +49,16 @@ class EolCourseProgramXBlock(XBlock):
         frag = Fragment(template)
         frag.add_css(self.resource_string("static/css/eolcourseprogram.css"))
         frag.add_javascript(self.resource_string("static/js/src/studio.js"))
-        frag.initialize_js('EolCourseProgramStudioXBlock')
+        settings = {
+            'url_get_course_programs':reverse(
+                'get_course_programs',
+                    kwargs={
+                        'course_id': text_type(self.course_id)
+                    }
+            ),
+            'xblock_program_id': self.program_id
+        }
+        frag.initialize_js('EolCourseProgramStudioXBlock', json_args=settings)
         return frag
 
     @XBlock.handler

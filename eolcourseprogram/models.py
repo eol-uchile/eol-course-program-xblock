@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import six
+from six import text_type
 
 from django.db import models
 
@@ -22,7 +22,7 @@ class EolCourseProgram(models.Model):
         """
         return [
             {
-                'course_id'     : six.text_type(c.id),
+                'course_id'     : text_type(c.id),
                 'display_name'  : c.display_name_with_default
             }
             for c in self.courses.all()
