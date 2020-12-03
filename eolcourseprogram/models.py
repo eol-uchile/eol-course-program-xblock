@@ -23,7 +23,7 @@ class EolCourseProgram(models.Model):
         return [
             {
                 'course_id'     : text_type(c.id),
-                'display_name'  : c.display_name_with_default
+                'display_name'  : c.display_name_with_default.title()
             }
             for c in self.courses.all()
         ]

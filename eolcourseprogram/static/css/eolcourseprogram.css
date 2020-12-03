@@ -1,5 +1,108 @@
 /* CSS for EolCourseProgramXBlock */
 
+.eolcourseprogram_block {
+    font-family: "Roboto", sans-serif;
+    background: #ffffff;
+    max-width: 800px;
+    margin: 10px auto;
+    padding: 20px 45px;
+    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.2), 0 3px 3px 0 rgba(0, 0, 0, 0.24);
+    border-radius: 10px;
+}
+
+.eolcourseprogram_block h2{
+    color: #0278ab;
+}
+
+.eolcourseprogram_block .progress {
+    background-color: #6c757da1 !important;
+}
+
+.eolcourseprogram_block .progress .progress-bar {
+    background-color: #01810394 !important;
+    height: 25px;
+}
+
+
+.eolcourseprogram_block .items-body {
+    display: grid;
+}
+
+.eolcourseprogram_block .items-body-content {
+    padding: 10px;
+    padding-right: 0px;
+    display: grid;
+    grid-template-columns: 10fr 1fr;
+    font-size: 13px;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.eolcourseprogram_block .items-body-content.course-disabled {
+    cursor: not-allowed;
+    border-radius: 5px;
+    background-color: #6c757d21;
+    font-weight: bold;
+}
+
+.eolcourseprogram_block .items-body-content:hover {
+    border-radius: 5px;
+    /* border: 1px solid #009bdd; */
+    background-color: #0878ab38;
+}
+
+.eolcourseprogram_block .items-body-content.course-disabled:hover {
+    background-color: #6c757d4a;
+}
+
+.eolcourseprogram_block .items-body-content i {
+    align-self: center;
+    font-size: 15px;
+    color:  #009bdd;
+    font-weight: bold;
+}
+
+.eolcourseprogram_block .items-body-content i,
+.eolcourseprogram_block .items-body-content span.status {
+    text-align: center;
+}
+
+.eolcourseprogram_block .items-body-content i.fa-chevron-circle-right {
+    animation: icon 1.5s infinite forwards;
+}
+
+.eolcourseprogram_block .items-body-content i.fa-check-circle {
+    color: #01810394;
+}
+
+.eolcourseprogram_block .items-body-content i.fa-times-circle {
+    color: #ff0000ad
+}
+
+.eolcourseprogram_block .items-body-content i.fa-spin {
+    color: #6c757da1;
+}
+
+.eolcourseprogram_block .items-body-content i.fa-ban {
+    color: #000000;
+}
+
+@keyframes icon {
+0%,100%{
+    transform: translate(0px);
+}
+50% {
+    transform: translate(3px);
+}
+}
+
+.eolcourseprogram_block hr.hr-course-program {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #009bdd, rgba(0, 0, 0, 0));
+}
+
+
 #settings-tab .course_programs {
     width: 45%;
     margin-left: calc(25% + 15px);

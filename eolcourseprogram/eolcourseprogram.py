@@ -29,6 +29,8 @@ class EolCourseProgramXBlock(XBlock):
         scope = Scope.settings
     )
 
+    has_author_view = True
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -40,9 +42,27 @@ class EolCourseProgramXBlock(XBlock):
         frag = Fragment(template)
         frag.add_css(self.resource_string("static/css/eolcourseprogram.css"))
         frag.add_javascript(self.resource_string("static/js/src/eolcourseprogram.js"))
-        frag.initialize_js('EolCourseProgramXBlock')
+        settings = {
+            'url_get_program_info':reverse(
+                'get_program_info',
+                    kwargs={
+                        'course_id': text_type(self.course_id),
+                        'program_id': self.program_id
+                    }
+            ),
+            'xblock_program_id': self.program_id
+        }
+        frag.initialize_js('EolCourseProgramXBlock', json_args=settings)
         return frag
 
+    def author_view(self, context=None):
+        context_html = self.get_context()
+        template = self.render_template(
+            'static/html/author_view.html', context_html)
+        frag = Fragment(template)
+        frag.add_css(self.resource_string("static/css/eolcourseprogram.css"))
+        return frag
+    
     def studio_view(self, context=None):
         context_html = self.get_context()
         template = self.render_template('static/html/studio.html', context_html)
