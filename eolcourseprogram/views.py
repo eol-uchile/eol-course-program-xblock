@@ -3,7 +3,9 @@
 import json
 
 from django.http import HttpResponse, JsonResponse
-
+from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
+from openedx.features.course_experience import course_home_url_name
+from django.urls import reverse
 from opaque_keys.edx.keys import CourseKey
 from django.contrib.auth.models import User
 from .models import EolCourseProgram
@@ -18,6 +20,22 @@ def _has_access(request, course_id):
         courseenrollment__is_active=1,
         pk = request.user.id
     ).exists()
+
+def _get_course_grade_passed(user, course_id):
+    """
+        Get 'passed' (Boolean representing whether the course has been
+                passed according to the course's grading policy.)
+    """
+    course_key = CourseKey.from_string(course_id)
+    course_grade = CourseGradeFactory().read(user, course_key=course_key)
+    return course_grade.passed
+
+def _get_course_url(course_id):
+    """
+        Return course home page url
+    """
+    course_key = CourseKey.from_string(course_id)
+    return reverse(course_home_url_name(course_key), kwargs={'course_id': course_id})
 
 def get_course_programs(request, course_id):
     """
@@ -59,7 +77,15 @@ def get_program_info(request, course_id, program_id):
         )
         data = {
             'program_name'  : program.program_name.title(),
-            'courses_list'  : program.courses_list
+            'courses_list'  : [
+                {
+                    'course_id'     : c["course_id"],
+                    'display_name'  : c["display_name"],
+                    'passed'        : _get_course_grade_passed(request.user, c["course_id"]),
+                    'course_url'    : _get_course_url(c["course_id"])
+                }
+                for c in program.courses_list
+            ]
         }
     except EolCourseProgram.DoesNotExist:
         return HttpResponse(status=409)

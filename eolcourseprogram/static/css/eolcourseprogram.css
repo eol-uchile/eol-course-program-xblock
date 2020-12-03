@@ -28,6 +28,10 @@
     display: grid;
 }
 
+.eolcourseprogram_block .items-body a {
+    color: #000000;
+}
+
 .eolcourseprogram_block .items-body-content {
     padding: 10px;
     padding-right: 0px;
@@ -57,7 +61,7 @@
 
 .eolcourseprogram_block .items-body-content i {
     align-self: center;
-    font-size: 15px;
+    font-size: 18px;
     color:  #009bdd;
     font-weight: bold;
 }
