@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from django.conf import settings
 
-from .views import get_course_programs, get_program_info
+from .views import get_course_programs, get_program_info, enroll_and_redirect
 
 from django.contrib.auth.decorators import login_required
 
@@ -19,5 +19,10 @@ urlpatterns = (
         ),
         login_required(get_program_info),
         name='get_program_info',
+    ),
+    url(
+        r'^eol_course_programs/enroll_and_redirect/(?P<program_id>.*)',
+        login_required(enroll_and_redirect),
+        name='enroll_and_redirect',
     ),
 )

@@ -69,7 +69,7 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         $div.insertAdjacentHTML('beforeend', course.passed ? approved_icon : incomplete_icon );
         // create 'a' element with the course home page url
         let $a = document.createElement('a');
-        $a.href = course.course_url;
+        $a.href = settings.url_enroll_and_redirect;
         $a.target = '_blank';
         // append div into 'a' element
         $a.append($div);
@@ -97,6 +97,7 @@ function EolCourseProgramXBlock(runtime, element, settings) {
           create_html_final_course(program.final_course, program.final_course_allowed);
         } else {
           $(element).find(".final_course_instruction").text('');  // Remove final course instruction
+          $(element).find(".final_course_section").hide();
         }
       });
     }

@@ -50,6 +50,12 @@ class EolCourseProgramXBlock(XBlock):
                         'program_id': self.program_id
                     }
             ),
+            'url_enroll_and_redirect':reverse(
+                'enroll_and_redirect',
+                    kwargs={
+                        'program_id': self.program_id
+                    }
+            ),
             'xblock_program_id': self.program_id
         }
         frag.initialize_js('EolCourseProgramXBlock', json_args=settings)

@@ -4,9 +4,12 @@ import json
 
 from django.http import HttpResponse, JsonResponse
 from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
+from student.models import CourseEnrollment
 from openedx.features.course_experience import course_home_url_name
 from django.urls import reverse
+from django.shortcuts import redirect
 from opaque_keys.edx.keys import CourseKey
+from opaque_keys import InvalidKeyError
 from django.contrib.auth.models import User
 from .models import EolCourseProgram
 
@@ -59,7 +62,11 @@ def _get_courses_list_with_status(user, list_info):
         list.append( course_info ) # append to list
         approved_count += 1 if course_info["passed"] else 0 # increase counter if course is passed
     final_course_allowed = approved_count == len(list_info) # verify if 'courses passed' counter is equal to 'courses list' length
-    return list, approved_count, final_course_allowed
+    return {
+        "list" : list,
+        "approved_count" : approved_count,
+        "final_course_allowed" : final_course_allowed
+    }
 
 def get_course_programs(request, course_id):
     """
@@ -100,14 +107,45 @@ def get_program_info(request, course_id, program_id):
         program = EolCourseProgram.objects.get(
             pk = program_id
         )
-        list, approved_count, final_course_allowed = _get_courses_list_with_status( request.user, program.courses_list_info )
+        courses_list = _get_courses_list_with_status( request.user, program.courses_list_info )
         data = {
             'program_name'          : program.program_name.title(),
             'final_course'          : _get_course_info( request.user, program.final_course_info ) if program.final_course_info else None,
-            'courses_list'          : list,
-            'approved_count'        : approved_count,
-            'final_course_allowed'  : final_course_allowed
+            'courses_list'          : courses_list["list"],
+            'approved_count'        : courses_list["approved_count"],
+            'final_course_allowed'  : courses_list["final_course_allowed"]
         }
     except EolCourseProgram.DoesNotExist:
         return HttpResponse(status=409)
     return JsonResponse(data, safe=False)
+
+def enroll_and_redirect(request, program_id):
+    """"
+        Enroll and redirect FINAL COURSE
+    """
+    program = EolCourseProgram.objects.get(
+        pk = program_id
+    )
+    final_course_id = program.final_course_info["course_id"] if program.final_course_info else None
+    # get courses list with status => final_course_allowed required to enroll
+    courses_list = _get_courses_list_with_status( request.user, program.courses_list_info )
+    # check if final_course_id is valid
+    try:
+        course_key = CourseKey.from_string(final_course_id)
+    except InvalidKeyError:
+        raise Http404(u"Invalid course_key")
+
+    if(not _has_access(request, final_course_id) and courses_list["final_course_allowed"]):
+        # enroll as honor student
+        CourseEnrollment.enroll(
+            request.user,
+            course_key,
+            mode='honor'
+        )
+    return redirect(
+        reverse(
+            course_home_url_name(course_key), 
+            kwargs={'course_id': final_course_id}
+        )
+    )
+    
