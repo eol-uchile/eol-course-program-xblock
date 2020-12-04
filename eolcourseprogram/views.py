@@ -37,6 +37,30 @@ def _get_course_url(course_id):
     course_key = CourseKey.from_string(course_id)
     return reverse(course_home_url_name(course_key), kwargs={'course_id': course_id})
 
+def _get_course_info(user, course):
+    """
+        Return course info 
+    """
+    return {
+        'course_id'     : course["course_id"],
+        'display_name'  : course["display_name"],
+        'passed'        : _get_course_grade_passed(user, course["course_id"]),
+        'course_url'    : _get_course_url(course["course_id"])
+    }
+
+def _get_courses_list_with_status(user, list_info):
+    """
+        Return courses list, approved courses count and final_course_allowed
+    """
+    list = []
+    approved_count = 0
+    for c in list_info:
+        course_info = _get_course_info( user, c ) # get info
+        list.append( course_info ) # append to list
+        approved_count += 1 if course_info["passed"] else 0 # increase counter if course is passed
+    final_course_allowed = approved_count == len(list_info) # verify if 'courses passed' counter is equal to 'courses list' length
+    return list, approved_count, final_course_allowed
+
 def get_course_programs(request, course_id):
     """
         GET REQUEST
@@ -56,7 +80,8 @@ def get_course_programs(request, course_id):
         {
             'program_id'    : cp.pk,
             'program_name'  : cp.program_name.title(),
-            'courses_list'  : cp.courses_list
+            'courses_list'  : cp.courses_list_info,
+            'final_course'  : cp.final_course_info
         }
         for cp in course_programs
     ]
@@ -75,17 +100,13 @@ def get_program_info(request, course_id, program_id):
         program = EolCourseProgram.objects.get(
             pk = program_id
         )
+        list, approved_count, final_course_allowed = _get_courses_list_with_status( request.user, program.courses_list_info )
         data = {
-            'program_name'  : program.program_name.title(),
-            'courses_list'  : [
-                {
-                    'course_id'     : c["course_id"],
-                    'display_name'  : c["display_name"],
-                    'passed'        : _get_course_grade_passed(request.user, c["course_id"]),
-                    'course_url'    : _get_course_url(c["course_id"])
-                }
-                for c in program.courses_list
-            ]
+            'program_name'          : program.program_name.title(),
+            'final_course'          : _get_course_info( request.user, program.final_course_info ) if program.final_course_info else None,
+            'courses_list'          : list,
+            'approved_count'        : approved_count,
+            'final_course_allowed'  : final_course_allowed
         }
     except EolCourseProgram.DoesNotExist:
         return HttpResponse(status=409)

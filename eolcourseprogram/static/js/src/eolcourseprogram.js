@@ -21,26 +21,29 @@ function EolCourseProgramXBlock(runtime, element, settings) {
       $(element).find('.progress-bar').css("width", `${percentage}%`);
     }
 
+    var create_html_course_element = ( elem ) => {
+      // span text
+      let $span = document.createElement('span');
+      let $text = document.createTextNode(`${elem.display_name}`);
+      $span.appendChild($text);
+      // element container
+      let $div = document.createElement('div');
+      $div.classList.add("items-body-content");
+      // insert span text into element container
+      $div.appendChild($span);
+      return $div;
+    }
+    
     var create_html_courses_list = ( courses_list ) => {
       /*
         Create a list with all the course in the program
       */
       var $list = $(element).find('#courses_list');
-      var approved_count = 0;
       courses_list.forEach( elem => {
         /*
           Create each course element
         */
-        if (elem.passed) approved_count++;
-        // span text
-        let $span = document.createElement('span');
-        let $text = document.createTextNode(`${elem.display_name}`);
-        $span.appendChild($text);
-        // element container
-        let $div = document.createElement('div');
-        $div.classList.add("items-body-content");
-        // insert span text into element container
-        $div.appendChild($span);
+        let $div = create_html_course_element(elem);
         // insert status icon
         $div.insertAdjacentHTML('beforeend', elem.passed ? approved_icon : incomplete_icon );
         // create 'a' element with the course home page url
@@ -52,7 +55,32 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         // insert the new course element into the list
         $list.append($a);
       });
-      fill_counters_and_percentage(approved_count, courses_list.length);
+    }
+
+    var create_html_final_course = (course, is_allowed) => {
+      /*
+        Create final course section
+        is_allowed: True if course.is_passed == course_list.length 
+      */
+      var $list = $(element).find('#final_course_list');
+      let $div = create_html_course_element(course);
+      if(is_allowed) {
+        // insert status icon
+        $div.insertAdjacentHTML('beforeend', course.passed ? approved_icon : incomplete_icon );
+        // create 'a' element with the course home page url
+        let $a = document.createElement('a');
+        $a.href = course.course_url;
+        $a.target = '_blank';
+        // append div into 'a' element
+        $a.append($div);
+        // insert the new course element into the list
+        $list.append($a);
+      } else {
+        // insert status icon (not allowed)
+        $div.insertAdjacentHTML('beforeend', not_allowed_icon );
+        $div.classList.add("course-disabled");
+        $list.append($div);
+      }
     }
 
     var get_program_info = () => {
@@ -60,10 +88,16 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         Get program info from API
       */
       $.get(settings.url_get_program_info, function(program, status){
+        console.log(program);
         $(element).find(".program_name").text(program.program_name);
         create_html_courses_list(program.courses_list);
-        var $ul = $(element).find('ul#courses_list');
-        program.courses_list.forEach( elem => $ul.append($("<li>").text(`${elem.display_name} (${elem.course_id})`)) );
+        fill_counters_and_percentage(program.approved_count, program.courses_list.length);
+        // show final course if exists
+        if (program.final_course) {
+          create_html_final_course(program.final_course, program.final_course_allowed);
+        } else {
+          $(element).find(".final_course_instruction").text('');  // Remove final course instruction
+        }
       });
     }
 

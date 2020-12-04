@@ -47,6 +47,9 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
       var $ol = $(element).find('ol#courses_list');
       $ol.html('');
       program.courses_list.forEach( elem => $ol.append($("<li>").text(`${elem.display_name} (${elem.course_id})`)) );
+      if(program.final_course) {
+        $ol.append($("<li>").text(`[FINAL] ${program.final_course.display_name} (${program.final_course.course_id})`));
+      }
     }
 
     var create_html_select = (course_programs) => {
@@ -62,6 +65,7 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
 
     var get_course_programs = () => {
       $.get(settings.url_get_course_programs, function(data, status){
+        console.log(data);
         course_programs = data;
         if(course_programs.length > 0) {
           create_html_select(course_programs);
