@@ -60,9 +60,14 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-#OSX
-*.DS_Store
 
+# openedx test files
+test_root/
+setup.cfg
 
 # .bak files
+
 *.bak
+
+# MacOSX
+.DS_Store
