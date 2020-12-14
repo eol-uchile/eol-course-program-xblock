@@ -67,12 +67,13 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
       $.get(settings.url_get_course_programs, function(data, status){
         console.log(data);
         course_programs = data;
+        $(element).find('#course_program_loading').hide();
+        $(element).find('.course_program_studio').show();
         if(course_programs.length > 0) {
           create_html_select(course_programs);
-          $(element).find('#course_program_loading').hide();
-          $(element).find('.course_program_studio').show();
         } else {
-          $(element).find('#course_program_loading').text("Este curso no pertenece a ningún programa.");
+          $(element).find('.settings-list').text("Este curso no pertenece a ningún programa.");
+          $(element).find('.save-button').hide();
         }
       });
     }
