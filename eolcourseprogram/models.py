@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from six import text_type
+from six import text_type, iteritems
 
 from django.db import models
+from django.conf import settings
 
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
+COURSE_MODE_SLUG_CHOICES = [(key, enrollment_mode['display_name'])
+                            for key, enrollment_mode in iteritems(settings.COURSE_ENROLLMENT_MODES)]
 
 class EolCourseProgram(models.Model):
     """
@@ -20,6 +23,13 @@ class EolCourseProgram(models.Model):
         CourseOverview, 
         on_delete=models.CASCADE, 
         related_name="final_course", 
+        blank=True,
+        null=True
+    )
+    final_course_mode = models.CharField(
+        max_length=100, 
+        choices=COURSE_MODE_SLUG_CHOICES,
+        help_text="Este valor se utiliza únicamente cuando el programa tiene definido un 'final course'. Si 'final course' está definido, y 'final course mode' está vacío, por defecto los estudiantes se inscribirán como 'honor'.",
         blank=True,
         null=True
     )

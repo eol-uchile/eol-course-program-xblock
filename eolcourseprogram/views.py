@@ -137,10 +137,11 @@ def enroll_and_redirect(request, program_id):
 
     if(not _has_access(request, final_course_id) and courses_list["final_course_allowed"]):
         # enroll as honor student
+        final_course_mode = program.final_course_mode if program.final_course_mode is not None else 'honor'
         CourseEnrollment.enroll(
             request.user,
             course_key,
-            mode='honor'
+            mode = final_course_mode # honor by default
         )
     return redirect(
         reverse(

@@ -184,7 +184,9 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
             Test Enroll and redirect
         """
         # Student should not be enrolled
-        self.assertFalse(CourseEnrollment.is_enrolled(self.student, self.final_course_id))
+        mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.final_course_id)
+        self.assertFalse(is_active)
+        self.assertEqual(mode, None)
 
         grade_true = Mock()
         grade_true.passed = True
@@ -200,8 +202,36 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
             )
         )
         self.assertEqual(response.status_code, 302)
-        # Student should be enrolled
-        self.assertTrue(CourseEnrollment.is_enrolled(self.student, self.final_course_id))
+        # Student should be enrolled as 'honor' by default
+        mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.final_course_id)
+        self.assertTrue(is_active)
+        self.assertEqual(mode, 'honor')
+
+    @patch('lms.djangoapps.grades.course_grade_factory.CourseGradeFactory.read')
+    def test_enroll_mode(self, coursegradefractory_read):
+        """
+            Test successful enroll mode
+        """
+        grade_true = Mock()
+        grade_true.passed = True
+        # Set final course mode
+        course_program = EolCourseProgram.objects.get(pk=1)
+        course_program.final_course_mode = 'verified'
+        course_program.save()
+        coursegradefractory_read.side_effect = [grade_true, grade_true, grade_true, grade_true, grade_true] # 4 program courses + 1 final course
+        response = self.client.get(
+            reverse(
+                'enroll_and_redirect',
+                    kwargs={
+                        'program_id': 1
+                        }
+            )
+        )
+        self.assertEqual(response.status_code, 302)
+        # Student should be enrolled as 'verified'
+        mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.final_course_id)
+        self.assertTrue(is_active)
+        self.assertEqual(mode, 'verified')
 
 
 class TestRequest(object):
