@@ -14,11 +14,52 @@
     color: #0278ab;
 }
 
+.eolcourseprogram_block p, 
+.eolcourseprogram_block h1, 
+.eolcourseprogram_block h2, 
+.eolcourseprogram_block h3, 
+.eolcourseprogram_block h4, 
+.eolcourseprogram_block h5 {
+    font-family: "Trebuchet MS" !important;
+}
+
+.eolcourseprogram_block .my-2 { 
+    margin-bottom: 0.5rem !important;
+    margin-top: 0.5rem !important;
+}
+
+.eolcourseprogram_block .text-muted.font-italic.text-justify { 
+    color: #6c757d !important;
+    font-style: italic !important;
+    text-align: justify !important;
+}
+
+.eolcourseprogram_block .text-uppercase {
+    text-transform: uppercase !important;
+}
+
 .eolcourseprogram_block .progress {
+    background: none !important;
+    display: block !important;
+    height: auto !important;
+    overflow: hidden;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+
     background-color: #6c757da1 !important;
 }
 
 .eolcourseprogram_block .progress .progress-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    background-color: #007bff;
+    transition: width 0.6s ease;
+
     background-color: #01810394 !important;
     height: 25px;
 }
