@@ -11,18 +11,27 @@ from django.shortcuts import redirect
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 from django.contrib.auth.models import User
+from django.core.exceptions import FieldError
+from courseware.courses import get_course_with_access
+from courseware.access import has_access
 from .models import EolCourseProgram
 
 import logging
 logger = logging.getLogger(__name__)
 
 def _has_access(request, course_id):
-    course_key = CourseKey.from_string(course_id)
-    return User.objects.filter(
-        courseenrollment__course_id=course_key,
-        courseenrollment__is_active=1,
-        pk = request.user.id
-    ).exists()
+    try:
+        course_key = CourseKey.from_string(course_id)
+        course = get_course_with_access(request.user, "load", course_key)
+        logger.warning("try")
+        return User.objects.filter(
+            courseenrollment__course_id=course_key,
+            courseenrollment__is_active=1,
+            pk = request.user.id
+        ).exists() or bool(has_access(request.user, 'staff', course))
+    except Exception:
+        logger.warning("except")
+        return False
 
 def _get_course_grade_passed(user, course_id):
     """
