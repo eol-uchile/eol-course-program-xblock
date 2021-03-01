@@ -23,14 +23,12 @@ def _has_access(request, course_id):
     try:
         course_key = CourseKey.from_string(course_id)
         course = get_course_with_access(request.user, "load", course_key)
-        logger.warning("try")
         return User.objects.filter(
             courseenrollment__course_id=course_key,
             courseenrollment__is_active=1,
             pk = request.user.id
         ).exists() or bool(has_access(request.user, 'staff', course))
     except Exception:
-        logger.warning("except")
         return False
 
 def _get_course_grade_passed(user, course_id):
