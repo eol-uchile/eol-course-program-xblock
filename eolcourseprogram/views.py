@@ -42,10 +42,9 @@ def _get_course_grade_passed(user, course_id):
 
 def _get_course_url(course_id):
     """
-        Return course home page url
+        Return course about page url
     """
-    course_key = CourseKey.from_string(course_id)
-    return reverse(course_home_url_name(course_key), kwargs={'course_id': course_id})
+    return reverse('about_course', args=[course_id])
 
 def _get_course_info(user, course):
     """
@@ -93,7 +92,7 @@ def get_course_programs(request, course_id):
     course_programs_list = [
         {
             'program_id'    : cp.pk,
-            'program_name'  : cp.program_name.title(),
+            'program_name'  : cp.program_name.capitalize(),
             'courses_list'  : cp.courses_list_info,
             'final_course'  : cp.final_course_info
         }
@@ -116,7 +115,7 @@ def get_program_info(request, course_id, program_id):
         )
         courses_list = _get_courses_list_with_status( request.user, program.courses_list_info )
         data = {
-            'program_name'          : program.program_name.title(),
+            'program_name'          : program.program_name.capitalize(),
             'final_course'          : _get_course_info( request.user, program.final_course_info ) if program.final_course_info else None,
             'courses_list'          : courses_list["list"],
             'approved_count'        : courses_list["approved_count"],

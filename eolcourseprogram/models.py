@@ -43,7 +43,7 @@ class EolCourseProgram(models.Model):
         return [
             {
                 'course_id'     : text_type(c.id),
-                'display_name'  : c.display_name_with_default.title()
+                'display_name'  : c.display_name_with_default.capitalize()
             }
             for c in self.courses.all()
         ]
@@ -56,5 +56,5 @@ class EolCourseProgram(models.Model):
             return None
         return {
             'course_id'     : text_type(self.final_course.id),
-            'display_name'  : self.final_course.display_name_with_default.title()
+            'display_name'  : self.final_course.display_name_with_default.capitalize()
         }
