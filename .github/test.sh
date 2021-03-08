@@ -3,6 +3,7 @@
 pip install -e /openedx/requirements/eol-course-program-xblock
 
 cd /openedx/requirements/eol-course-program-xblock
+cp /openedx/edx-platform/setup.cfg .
 mkdir test_root
 cd test_root/
 ln -s /openedx/staticfiles .
