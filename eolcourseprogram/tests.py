@@ -6,15 +6,15 @@ from mock import patch, Mock
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from util.testing import UrlResetMixin
+from common.djangoapps.util.testing import UrlResetMixin
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
-from student.models import CourseEnrollment
+from common.djangoapps.student.models import CourseEnrollment
 
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
-from student.tests.factories import UserFactory, CourseEnrollmentFactory
+from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollmentFactory
 from xblock.field_data import DictFieldData
-from student.roles import CourseStaffRole
+from common.djangoapps.student.roles import CourseStaffRole
 from .eolcourseprogram import EolCourseProgramXBlock
 
 from . import views
@@ -77,7 +77,7 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         self.course_program, self.final_course_id = _generate_default_test_data(self.course)
         # Patch the comment client user save method so it does not try
         # to create a new cc user when creating a django user
-        with patch('student.models.cc.User.save'):
+        with patch('common.djangoapps.student.models.cc.User.save'):
             # Create the student
             self.student = UserFactory(username='student', password='test', email='student@edx.org')
             # Enroll the student in the course
@@ -282,7 +282,7 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         self.xblock = self.make_an_xblock()
         # Patch the comment client user save method so it does not try
         # to create a new cc user when creating a django user
-        with patch('student.models.cc.User.save'):
+        with patch('common.djangoapps.student.models.cc.User.save'):
             uname = 'student'
             email = 'student@edx.org'
             password = 'test'
