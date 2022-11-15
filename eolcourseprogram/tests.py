@@ -333,6 +333,7 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
             Validate that xblock is created successfully
         """
         self.assertEqual(self.xblock.display_name, 'Programa de Cursos')
+        self.assertEqual(self.xblock.next_course_enunciate, 'Curso Final')
         self.assertEqual(self.xblock.program_id, None)
 
     def test_student_view_without_configuration(self):
@@ -379,10 +380,12 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         request.method = 'POST'
         post_data = {
             'program_id': 999,
+            'next_course_enunciate': 'test'
         }
         data = json.dumps(post_data)
         request.body = data
         request.params = post_data
         response = self.xblock.studio_submit(request)
         self.assertEqual(self.xblock.display_name, 'Programa de Cursos')
+        self.assertEqual(self.xblock.next_course_enunciate, 'test')
         self.assertEqual(self.xblock.program_id, 999)
