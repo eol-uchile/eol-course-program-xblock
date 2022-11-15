@@ -4,7 +4,7 @@ import json
 
 from django.http import HttpResponse, JsonResponse
 from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
-from student.models import CourseEnrollment
+from common.djangoapps.student.models import CourseEnrollment
 from openedx.features.course_experience import course_home_url_name
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -12,8 +12,8 @@ from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 from django.contrib.auth.models import User
 from django.core.exceptions import FieldError
-from courseware.courses import get_course_with_access
-from courseware.access import has_access
+from lms.djangoapps.courseware.courses import get_course_with_access
+from lms.djangoapps.courseware.access import has_access
 from .models import EolCourseProgram
 
 import logging
