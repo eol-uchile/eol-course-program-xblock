@@ -28,6 +28,12 @@ class EolCourseProgramXBlock(XBlock):
         help = _("Al seleccionar un programa se desplegará el listado de cursos asociados."),
         scope = Scope.settings
     )
+    next_course_enunciate = String(
+        display_name=_("Enunciado Curso Final"),
+        help=_("Enunciado para el curso final o siguiente curso del programa"),
+        default="Curso Final",
+        scope=Scope.settings,
+    )
 
     has_author_view = True
 
@@ -90,6 +96,7 @@ class EolCourseProgramXBlock(XBlock):
     @XBlock.handler
     def studio_submit(self, request, suffix=''):
         self.program_id = request.params['program_id']
+        self.next_course_enunciate = request.params['next_course_enunciate']
         return Response({'result': 'success'})
 
     def get_context(self):

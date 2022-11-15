@@ -6,12 +6,14 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
   $(element).find('.save-button').bind('click', function(e) {
     var form_data = new FormData();
     var program_id = $(element).find('#course_programs_list').val();
+    var next_course_enunciate = $(element).find('#next_course_enunciate').val();
     if (program_id == null) {
       runtime.notify('cancel', {});
       e.preventDefault();
       return;
     }
     form_data.append('program_id', program_id);
+    form_data.append('next_course_enunciate', next_course_enunciate);
     if ($.isFunction(runtime.notify)) {
       runtime.notify('save', {state: 'start'});
     }
