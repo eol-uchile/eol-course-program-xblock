@@ -2,7 +2,7 @@
 
 import json
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
 from common.djangoapps.student.models import CourseEnrollment
 from openedx.features.course_experience import course_home_url_name
@@ -153,6 +153,39 @@ def enroll_and_redirect(request, program_id):
         reverse(
             course_home_url_name(course_key), 
             kwargs={'course_id': final_course_id}
+        )
+    )
+    
+def enroll_student(request, course_id):
+    """"
+        Enroll a user in a course of the program
+    """
+    
+    
+    # check if final_course_id is valid
+    try:
+        course_key = CourseKey.from_string(course_id)
+    except InvalidKeyError:
+        raise Http404(u"Invalid course_key")
+
+    # if(not _has_access(request, course_id)):
+        # enroll as honor student
+    course_mode = 'honor'
+    
+    CourseEnrollment.enroll(
+        request.user,
+        course_key,
+        mode = course_mode # honor by default
+    )
+
+    enrollment = CourseEnrollment.get_or_create_enrollment(request.user,course_key)
+    enrollment.activate()
+    enrollment.change_mode(course_mode)
+
+    return redirect(
+        reverse(
+            course_home_url_name(course_key), 
+            kwargs={'course_id': course_id}
         )
     )
     

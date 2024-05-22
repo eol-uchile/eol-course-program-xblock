@@ -50,10 +50,36 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         let $a = document.createElement('a');
         $a.href = elem.course_url;
         $a.target = '_blank';
+        $a.setAttribute('data-course-id', elem.course_id);
         // append div into 'a' element
         $a.append($div);
         // insert the new course element into the list
         $list.append($a);
+
+        $a.addEventListener('click', function(event) {
+          // Prevent the default behavior of the anchor element (i.e., navigating to a new page)
+          event.preventDefault();        
+          fetch('/eol_course_programs/enroll_student/' + elem.course_id, {
+            method: 'POST',
+            // Include any data you need to send to the backend
+            body: JSON.stringify({/* data */}),
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken() // Include the CSRF token in the headers
+          }
+          }).then(function(response) {
+              // Handle the response from the backend if needed
+              // window.open($a.href, '_blank');
+              window.location.href = $a.href;
+          }).catch(function(error) {
+              // Handle errors if the request fails
+              console.error('Error:', error);
+          });
+            
+          // If needed, you can also navigate to the href URL after executing the backend code
+          // window.location.href = href;
+        });
+
       });
     }
 
@@ -101,7 +127,21 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         }
       });
     }
-
+    
+    function getCSRFToken() {
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = cookies[i].trim();
+              if (cookie.substring(0, 'csrftoken'.length + 1) === ('csrftoken' + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring('csrftoken'.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+    }
     // Check if the component is correctly configured
     if(settings.xblock_program_id) {
         get_program_info();
