@@ -380,7 +380,8 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         request.method = 'POST'
         post_data = {
             'program_id': 999,
-            'next_course_enunciate': 'test'
+            'next_course_enunciate': 'test',
+            'program_courses_enrollment_modes':json.dumps({"course_1": "audit", "course_2": "verified"})
         }
         data = json.dumps(post_data)
         request.body = data
@@ -389,3 +390,4 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         self.assertEqual(self.xblock.display_name, 'Programa de Cursos')
         self.assertEqual(self.xblock.next_course_enunciate, 'test')
         self.assertEqual(self.xblock.program_id, 999)
+        self.assertEqual(self.xblock.program_courses_enrollment_modes, {"course_1": "audit", "course_2": "verified"})
