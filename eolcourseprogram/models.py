@@ -40,12 +40,14 @@ class EolCourseProgram(models.Model):
         """
             Return list of courses info
         """
+        courses = list(self.courses.all())
+        courses.sort(key=lambda c: c.id,reverse=True) 
         return [
             {
                 'course_id'     : text_type(c.id),
                 'display_name'  : c.display_name_with_default.capitalize()
             }
-            for c in self.courses.all()
+            for c in courses
         ]
     @property
     def final_course_info(self):

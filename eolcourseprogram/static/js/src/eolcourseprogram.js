@@ -27,11 +27,11 @@ function EolCourseProgramXBlock(runtime, element, settings) {
       let $text = document.createTextNode(`${elem.display_name}`);
       $span.appendChild($text);
       // element container
-      let $div = document.createElement('div');
-      $div.classList.add("items-body-content");
+      let $span_parent = document.createElement('span');
+      $span_parent.classList.add("items-body-content");
       // insert span text into element container
-      $div.appendChild($span);
-      return $div;
+      $span_parent.appendChild($span);
+      return $span_parent;
     }
     
     var create_html_courses_list = ( courses_list ) => {
@@ -39,30 +39,32 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         Create a list with all the course in the program
       */
       var $list = $(element).find('#courses_list');
+      let modes = settings.xblock_program_courses_enrollment_modes;
       courses_list.forEach( elem => {
         /*
           Create each course element
         */
-        let $div = create_html_course_element(elem);
+        let $span = create_html_course_element(elem);
         // insert status icon
-        $div.insertAdjacentHTML('beforeend', elem.passed ? approved_icon : incomplete_icon );
+        $span.insertAdjacentHTML('beforeend', elem.passed ? approved_icon : incomplete_icon );
         // create 'a' element with the course home page url
         let $a = document.createElement('a');
+        
         $a.href = elem.course_url;
         $a.target = '_blank';
         $a.setAttribute('data-course-id', elem.course_id);
-        // append div into 'a' element
-        $a.append($div);
+        // append span into 'a' element
+        $a.append($span);
         // insert the new course element into the list
         $list.append($a);
 
         $a.addEventListener('click', function(event) {
           // Prevent the default behavior of the anchor element (i.e., navigating to a new page)
           event.preventDefault();        
-          fetch('/eol_course_programs/enroll_student/' + elem.course_id, {
+          fetch(`/eol_course_programs/enroll_student/${elem.course_id}` , {
             method: 'POST',
             // Include any data you need to send to the backend
-            body: JSON.stringify({/* data */}),
+            body: JSON.stringify({mode:modes[`select_${elem.course_id}`]}),
             headers: {
               'Content-Type': 'application/json',
               'X-CSRFToken': getCSRFToken() // Include the CSRF token in the headers
@@ -70,9 +72,11 @@ function EolCourseProgramXBlock(runtime, element, settings) {
           }).then(function(response) {
               // Handle the response from the backend if needed
               // window.open($a.href, '_blank');
-              window.location.href = $a.href;
+              window.location.assign($a.href);
+              
           }).catch(function(error) {
               // Handle errors if the request fails
+              $(document).find('.eolcourseprogram_block').append($('<div>').addClass('error-message').text(`Ha ocurrido un error: ${error}`));
               console.error('Error:', error);
           });
             
@@ -89,23 +93,23 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         is_allowed: True if course.is_passed == course_list.length 
       */
       var $list = $(element).find('#final_course_list');
-      let $div = create_html_course_element(course);
+      let $span = create_html_course_element(course);
       if(is_allowed) {
         // insert status icon
-        $div.insertAdjacentHTML('beforeend', course.passed ? approved_icon : incomplete_icon );
+        $span.insertAdjacentHTML('beforeend', course.passed ? approved_icon : incomplete_icon );
         // create 'a' element with the course home page url
         let $a = document.createElement('a');
         $a.href = settings.url_enroll_and_redirect;
         $a.target = '_blank';
-        // append div into 'a' element
-        $a.append($div);
+        // append span into 'a' element
+        $a.append($span);
         // insert the new course element into the list
         $list.append($a);
       } else {
         // insert status icon (not allowed)
-        $div.insertAdjacentHTML('beforeend', not_allowed_icon );
-        $div.classList.add("course-disabled");
-        $list.append($div);
+        $span.insertAdjacentHTML('beforeend', not_allowed_icon );
+        $span.classList.add("course-disabled");
+        $list.append($span);
       }
     }
 
@@ -114,7 +118,6 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         Get program info from API
       */
       $.get(settings.url_get_program_info, function(program, status){
-        console.log(program);
         $(element).find(".program_name").text(program.program_name);
         create_html_courses_list(program.courses_list);
         fill_counters_and_percentage(program.approved_count, program.courses_list.length);
@@ -128,14 +131,14 @@ function EolCourseProgramXBlock(runtime, element, settings) {
       });
     }
     
-    function getCSRFToken() {
-      var cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-          var cookies = document.cookie.split(';');
-          for (var i = 0; i < cookies.length; i++) {
-              var cookie = cookies[i].trim();
-              if (cookie.substring(0, 'csrftoken'.length + 1) === ('csrftoken' + '=')) {
-                  cookieValue = decodeURIComponent(cookie.substring('csrftoken'.length + 1));
+    const getCSRFToken = () => {
+      let cookieValue = null;
+      if (document.cookie) {
+          const cookies = document.cookie.split(';');
+          for (const cookie of cookies) {
+              const trimmedCookie = cookie.trim();
+              if (trimmedCookie.startsWith('csrftoken=')) {
+                  cookieValue = decodeURIComponent(trimmedCookie.substring('csrftoken='.length));
                   break;
               }
           }

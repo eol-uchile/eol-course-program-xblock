@@ -7,6 +7,9 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
     var form_data = new FormData();
     var program_id = $(element).find('#course_programs_list').val();
     var next_course_enunciate = $(element).find('#next_course_enunciate').val();
+    var program_courses_enrollment_modes = $(element).find('#courses_list').children().map((idx, el) => {
+          return { idx: $(el).find('select').attr('name'), selectedText: $(el).find('select').find('option:selected').text() };
+        }).get().reduce((acc, { idx, selectedText }) => {acc[idx] = selectedText;return acc;}, {});
     if (program_id == null) {
       runtime.notify('cancel', {});
       e.preventDefault();
@@ -14,6 +17,7 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
     }
     form_data.append('program_id', program_id);
     form_data.append('next_course_enunciate', next_course_enunciate);
+    form_data.append('program_courses_enrollment_modes', JSON.stringify(program_courses_enrollment_modes));
     if ($.isFunction(runtime.notify)) {
       runtime.notify('save', {state: 'start'});
     }
@@ -48,7 +52,20 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
     var create_html_courses_list = (program) => {
       var $ol = $(element).find('ol#courses_list');
       $ol.html('');
-      program.courses_list.forEach( elem => $ol.append($("<li>").text(`${elem.display_name} (${elem.course_id})`)) );
+      program.courses_list.forEach( function(elem){
+                                        var modes = program.courses_modes[elem.course_id];
+                                        modes.unshift("Do not enroll")
+                                        var selected_mode = settings.xblock_program_courses_enrollment_modes[`select_${elem.course_id}`];
+                                        $ol.append($("<li>").text(`${elem.display_name} (${elem.course_id})`)
+                                        .append(
+                                          $('<div>').addClass('select-enrollment')
+                                          .append($("<span>").text('Enrollment Mode'))
+                                          .append($("<select>").attr("name", `select_${elem.course_id}`).append(modes.map(mode => {
+                                            const option = $("<option>").text(mode).val(mode);
+                                            if (mode === selected_mode) {option.attr("selected", "selected");} return option;
+                                          }                                      
+                                        )))));
+      });
       if(program.final_course) {
         $ol.append($("<li>").text(`[FINAL] ${program.final_course.display_name} (${program.final_course.course_id})`));
       }

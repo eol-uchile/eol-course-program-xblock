@@ -2,12 +2,13 @@ import pkg_resources
 from django.template import Context, Template
 from webob import Response
 from xblock.core import XBlock
-from xblock.fields import Integer, String, Scope
+from xblock.fields import Integer, String, Scope, Dict
 from xblock.fragment import Fragment
 from django.urls import reverse
-
+import simplejson as json
 from six import text_type
-
+import logging
+logger = logging.getLogger(__name__)
 # Make '_' a no-op so we can scrape strings
 _ = lambda text: text
 
@@ -27,6 +28,11 @@ class EolCourseProgramXBlock(XBlock):
         display_name = _("Programa"),
         help = _("Al seleccionar un programa se desplegará el listado de cursos asociados."),
         scope = Scope.settings
+    )
+    program_courses_enrollment_modes = Dict(
+        display_name=_("Modos de inscripción"),
+        help=_("Modos de inscripción para cada curso"),
+        scope=Scope.settings,
     )
     next_course_enunciate = String(
         display_name=_("Enunciado Curso Final"),
@@ -62,7 +68,8 @@ class EolCourseProgramXBlock(XBlock):
                         'program_id': self.program_id
                     }
             ),
-            'xblock_program_id': self.program_id
+            'xblock_program_id': self.program_id,
+            'xblock_program_courses_enrollment_modes': self.program_courses_enrollment_modes
         }
         frag.initialize_js('EolCourseProgramXBlock', json_args=settings)
         return frag
@@ -88,7 +95,8 @@ class EolCourseProgramXBlock(XBlock):
                         'course_id': text_type(self.course_id)
                     }
             ),
-            'xblock_program_id': self.program_id
+            'xblock_program_id': self.program_id,
+            'xblock_program_courses_enrollment_modes': self.program_courses_enrollment_modes
         }
         frag.initialize_js('EolCourseProgramStudioXBlock', json_args=settings)
         return frag
@@ -97,6 +105,9 @@ class EolCourseProgramXBlock(XBlock):
     def studio_submit(self, request, suffix=''):
         self.program_id = request.params['program_id']
         self.next_course_enunciate = request.params['next_course_enunciate']
+        self.program_courses_enrollment_modes = json.loads(request.params['program_courses_enrollment_modes'])
+        logger.info(self.program_courses_enrollment_modes)
+        logger.info(type(self.program_courses_enrollment_modes))
         return Response({'result': 'success'})
 
     def get_context(self):

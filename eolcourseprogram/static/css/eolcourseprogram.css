@@ -147,6 +147,13 @@
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #009bdd, rgba(0, 0, 0, 0));
 }
 
+.eolcourseprogram_block .error-message {
+    background: #ff6262;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin-block: 10px;
+}
 
 #settings-tab .course_programs {
     width: 45%;
@@ -157,4 +164,18 @@
 
 #settings-tab ol {
     list-style-type: decimal-leading-zero;
+}
+
+#settings-tab ol .select-enrollment{
+    padding-block: 10px;
+}
+
+#settings-tab ol .select-enrollment span{
+    margin-block-end: 10px;
+    margin-right: 10px;
+}
+
+#settings-tab ol .select-enrollment select{
+    padding: 5px;
+    font-size: 15px;
 }
