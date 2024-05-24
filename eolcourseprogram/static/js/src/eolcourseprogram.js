@@ -133,17 +133,8 @@ function EolCourseProgramXBlock(runtime, element, settings) {
     
     const getCSRFToken = () => {
       let cookieValue = null;
-      if (document.cookie) {
-          const cookies = document.cookie.split(';');
-          for (const cookie of cookies) {
-              const trimmedCookie = cookie.trim();
-              if (trimmedCookie.startsWith('csrftoken=')) {
-                  cookieValue = decodeURIComponent(trimmedCookie.substring('csrftoken='.length));
-                  break;
-              }
-          }
-      }
-      return cookieValue;
+      if (document.cookie) {cookieValue = document.cookie.split('; ').find((row) => row.startsWith("csrftoken="))?.split("=")[1];}
+      return decodeURIComponent(cookieValue);
     }
     // Check if the component is correctly configured
     if(settings.xblock_program_id) {
