@@ -4,7 +4,8 @@ from six import text_type, iteritems
 
 from django.db import models
 from django.conf import settings
-
+import logging
+logger = logging.getLogger(__name__)
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 COURSE_MODE_SLUG_CHOICES = [(key, enrollment_mode['display_name'])
@@ -40,14 +41,12 @@ class EolCourseProgram(models.Model):
         """
             Return list of courses info
         """
-        courses = list(self.courses.all())
-        courses.sort(key=lambda c: c.id,reverse=True) 
         return [
             {
                 'course_id'     : text_type(c.id),
                 'display_name'  : c.display_name_with_default.capitalize()
             }
-            for c in courses
+            for c in self.courses.order_by('eolcourseprogram_eolcourseprogram_courses.id')
         ]
     @property
     def final_course_info(self):

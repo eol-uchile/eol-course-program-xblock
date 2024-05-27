@@ -64,15 +64,15 @@ function EolCourseProgramXBlock(runtime, element, settings) {
           fetch(`/eol_course_programs/enroll_student/${elem.course_id}` , {
             method: 'POST',
             // Include any data you need to send to the backend
-            body: JSON.stringify({mode:modes[`select_${elem.course_id}`]}),
+            body: JSON.stringify({mode:modes[elem.course_id]}),
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRFToken': getCSRFToken() // Include the CSRF token in the headers
-          }
+              'X-CSRFToken': getCSRFToken(), // Include the CSRF token in the headers (https://docs.djangoproject.com/en/5.0/howto/csrf/)
+            },
+            mode: 'same-origin'            
           }).then(function(response) {
               // Handle the response from the backend if needed
-              // window.open($a.href, '_blank');
-              window.location.assign($a.href);
+              window.location.assign($a.href);              
               
           }).catch(function(error) {
               // Handle errors if the request fails

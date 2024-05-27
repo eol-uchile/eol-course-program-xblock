@@ -233,6 +233,23 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         self.assertTrue(is_active)
         self.assertEqual(mode, 'verified')
 
+    def test_student_enrollment_modes(self):
+        """
+        Test student enrollment in any course of the program based on modes
+        """
+        # Test enrollment for course_1
+        response = self.client.post(
+            reverse(
+                'enroll_student', 
+                kwargs={'course_id': self.course_program.courses_list_info[0]['course_id']}
+                ), 
+            json.dumps({'mode': 'audit'}), 
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 302)
+        mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.course_program.courses_list_info[0]['course_id'])
+        self.assertTrue(is_active)
+        self.assertEqual(mode, 'audit')
 
 class TestRequest(object):
     # pylint: disable=too-few-public-methods
