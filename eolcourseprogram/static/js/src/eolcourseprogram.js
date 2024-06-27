@@ -57,11 +57,10 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         $a.append($span);
         // insert the new course element into the list
         $list.append($a);
-        const encodedCourseId = encodeURIComponent(elem.course_id);
         $a.addEventListener('click', function(event) {
           // Prevent the default behavior of the anchor element (i.e., navigating to a new page)
-          event.preventDefault();   
-          fetch(`/eol_course_programs/enroll_student/${settings.xblock_program_id}/${encodedCourseId}` , {
+          event.preventDefault();
+          fetch(`/eol_course_programs/enroll_student/${settings.xblock_program_id}/${elem.course_id}` , {
             method: 'POST',
             // Include any data you need to send to the backend
             body: JSON.stringify({mode:modes[elem.course_id]}),
@@ -72,19 +71,11 @@ function EolCourseProgramXBlock(runtime, element, settings) {
             mode: 'same-origin'            
           })
           .then(async response => {
-            const jsonObj = await response.json();
-            return {
-              status: response.status,
-              body: jsonObj
-            };
-          })
-          .then(responseObj => {
-            const { status, body } = responseObj;        
-            if (status === 200) {
-              // console.log('Success Response Text:', body);
+            if (response.status === 200) {
+              // console.log('Success Response Text:', response.json());
               window.location.assign($a.href);
             } else {
-              throw new Error(`Ha ocurrido un error con la inscripción en el curso ${body.course_id}`);
+              throw new Error(`Ha ocurrido un error con la inscripción en el curso ${response.body}`);
             }
           })
           .catch(function(error) {

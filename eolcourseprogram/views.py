@@ -16,7 +16,6 @@ from django.core.exceptions import FieldError
 from lms.djangoapps.courseware.courses import get_course_with_access
 from lms.djangoapps.courseware.access import has_access
 from .models import EolCourseProgram
-import urllib.parse
 import traceback
 import logging
 logger = logging.getLogger(__name__)
@@ -163,18 +162,16 @@ def enroll_and_redirect(request, program_id):
         )
     return redirect(
         reverse(
-            course_home_url_name(course_key), 
+            course_home_url_name(course_key),
             kwargs={'course_id': final_course_id}
         )
     )
     
-def enroll_student(request, program_id, encoded_course_id):
+def enroll_student(request, program_id, course_id):
     """"
         Enroll a user in a course of the program
     """
-    course_id = urllib.parse.unquote(encoded_course_id)
-    
-    # check if final_course_id is valid
+    # check if course_id is valid
     try:
         course_key = CourseKey.from_string(course_id)
     except InvalidKeyError:
@@ -193,4 +190,3 @@ def enroll_student(request, program_id, encoded_course_id):
         "course_id":course_id
         }
     return JsonResponse(answer_dict)
-    

@@ -16,7 +16,6 @@ from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollm
 from xblock.field_data import DictFieldData
 from common.djangoapps.student.roles import CourseStaffRole
 from .eolcourseprogram import EolCourseProgramXBlock
-import urllib.parse
 from . import views
 
 from .models import EolCourseProgram
@@ -25,13 +24,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 XBLOCK_RUNTIME_USER_ID = 99
-
-def encode_course_id(course_id):
-    if isinstance(course_id, bytes):
-        course_id = course_id.decode('utf-8')
-    if not isinstance(course_id, str):
-        course_id = str(course_id)
-    return urllib.parse.quote(course_id, safe='')
 
 def _generate_default_test_data(course):
     # create final course
@@ -72,7 +64,7 @@ def _generate_default_test_data(course):
         CourseOverview.get_from_id(course2.id),
         CourseOverview.get_from_id(course3.id)
     )
-    return cp, final_course.id, CourseOverview.get_from_id(course1.id).id
+    return cp, final_course.id, course1.id
 
 
 class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
@@ -251,7 +243,7 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
                 'enroll_student', 
                 kwargs={
                     'program_id': 1,
-                    'encoded_course_id': encode_course_id(self.first_course_id)
+                    'course_id': self.first_course_id
                     }
                 ), 
             json.dumps({'mode': 'audit'}), 
