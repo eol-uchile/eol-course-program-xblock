@@ -57,24 +57,37 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         $a.append($span);
         // insert the new course element into the list
         $list.append($a);
-
+        const encodedCourseId = encodeURIComponent(elem.course_id);
         $a.addEventListener('click', function(event) {
           // Prevent the default behavior of the anchor element (i.e., navigating to a new page)
-          event.preventDefault();        
-          fetch(`/eol_course_programs/enroll_student/${elem.course_id}` , {
+          event.preventDefault();   
+          fetch(`/eol_course_programs/enroll_student/${settings.xblock_program_id}/${encodedCourseId}` , {
             method: 'POST',
             // Include any data you need to send to the backend
             body: JSON.stringify({mode:modes[elem.course_id]}),
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRFToken': getCSRFToken(), // Include the CSRF token in the headers (https://docs.djangoproject.com/en/5.0/howto/csrf/)
+              'X-CSRFToken': $.cookie("csrftoken"), // Include the CSRF token in the headers (https://docs.djangoproject.com/en/5.0/howto/csrf/)
             },
             mode: 'same-origin'            
-          }).then(function(response) {
-              // Handle the response from the backend if needed
-              window.location.assign($a.href);              
-              
-          }).catch(function(error) {
+          })
+          .then(async response => {
+            const jsonObj = await response.json();
+            return {
+              status: response.status,
+              body: jsonObj
+            };
+          })
+          .then(responseObj => {
+            const { status, body } = responseObj;        
+            if (status === 200) {
+              // console.log('Success Response Text:', body);
+              window.location.assign($a.href);
+            } else {
+              throw new Error(`Ha ocurrido un error con la inscripción en el curso ${body.course_id}`);
+            }
+          })
+          .catch(function(error) {
               // Handle errors if the request fails
               $(document).find('.eolcourseprogram_block').append($('<div>').addClass('error-message').text(`Ha ocurrido un error: ${error}`));
               console.error('Error:', error);
@@ -131,11 +144,6 @@ function EolCourseProgramXBlock(runtime, element, settings) {
       });
     }
     
-    const getCSRFToken = () => {
-      let cookieValue = null;
-      if (document.cookie) {cookieValue = document.cookie.split('; ').find((row) => row.startsWith("csrftoken="))?.split("=")[1];}
-      return decodeURIComponent(cookieValue);
-    }
     // Check if the component is correctly configured
     if(settings.xblock_program_id) {
         get_program_info();

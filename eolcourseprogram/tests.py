@@ -16,7 +16,7 @@ from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollm
 from xblock.field_data import DictFieldData
 from common.djangoapps.student.roles import CourseStaffRole
 from .eolcourseprogram import EolCourseProgramXBlock
-
+import urllib.parse
 from . import views
 
 from .models import EolCourseProgram
@@ -25,6 +25,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 XBLOCK_RUNTIME_USER_ID = 99
+
+def encode_course_id(course_id):
+    if isinstance(course_id, bytes):
+        course_id = course_id.decode('utf-8')
+    if not isinstance(course_id, str):
+        course_id = str(course_id)
+    return urllib.parse.quote(course_id, safe='')
 
 def _generate_default_test_data(course):
     # create final course
@@ -65,7 +72,8 @@ def _generate_default_test_data(course):
         CourseOverview.get_from_id(course2.id),
         CourseOverview.get_from_id(course3.id)
     )
-    return cp, final_course.id
+    return cp, final_course.id, CourseOverview.get_from_id(course1.id).id
+
 
 class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
     def setUp(self):
@@ -74,7 +82,7 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         self.course = CourseFactory.create(org='mss', course='999',
                                            display_name='eol course')
 
-        self.course_program, self.final_course_id = _generate_default_test_data(self.course)
+        self.course_program, self.final_course_id, self.first_course_id = _generate_default_test_data(self.course)
         # Patch the comment client user save method so it does not try
         # to create a new cc user when creating a django user
         with patch('common.djangoapps.student.models.cc.User.save'):
@@ -241,13 +249,16 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         response = self.client.post(
             reverse(
                 'enroll_student', 
-                kwargs={'course_id': self.course_program.courses_list_info[0]['course_id']}
+                kwargs={
+                    'program_id': 1,
+                    'encoded_course_id': encode_course_id(self.first_course_id)
+                    }
                 ), 
             json.dumps({'mode': 'audit'}), 
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, 302)
-        mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.course_program.courses_list_info[0]['course_id'])
+        self.assertEqual(response.status_code, 200)
+        mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.first_course_id)
         self.assertTrue(is_active)
         self.assertEqual(mode, 'audit')
 

@@ -107,7 +107,6 @@ class EolCourseProgramXBlock(XBlock):
         self.next_course_enunciate = request.params['next_course_enunciate']
         self.program_courses_enrollment_modes = json.loads(request.params['program_courses_enrollment_modes'])
         logger.debug("Program courses enrollment modes: %s",self.program_courses_enrollment_modes) 
-        logger.info(type(self.program_courses_enrollment_modes))
         return Response({'result': 'success'})
 
     def get_context(self):

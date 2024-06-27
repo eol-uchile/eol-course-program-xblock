@@ -26,7 +26,7 @@ urlpatterns = (
         name='enroll_and_redirect',
     ),
     url(
-        r'^eol_course_programs/enroll_student/(?P<course_id>.*)',
+        r'^eol_course_programs/enroll_student/(?P<program_id>.*)/(?P<encoded_course_id>.*)',
         login_required(enroll_student),
         name='enroll_student',
     ),

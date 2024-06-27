@@ -16,7 +16,7 @@ from django.core.exceptions import FieldError
 from lms.djangoapps.courseware.courses import get_course_with_access
 from lms.djangoapps.courseware.access import has_access
 from .models import EolCourseProgram
-
+import urllib.parse
 import traceback
 import logging
 logger = logging.getLogger(__name__)
@@ -97,7 +97,12 @@ def get_course_programs(request, course_id):
                 'program_id'    : cp.pk,
                 'program_name'  : cp.program_name.capitalize(),
                 'courses_list'  : cp.courses_list_info,
-                'courses_modes' : {course["course_id"]: list(CourseMode.modes_for_course_dict(course_id=CourseKey.from_string(course["course_id"])).keys()) for course in cp.courses_list_info},
+                'courses_modes': {
+                course["course_id"]: list(
+                        CourseMode.modes_for_course_dict(course_id=CourseKey.from_string(course["course_id"])).keys()
+                    )
+                    for course in cp.courses_list_info
+                },
                 'final_course'  : cp.final_course_info
             }
             for cp in course_programs
@@ -163,11 +168,11 @@ def enroll_and_redirect(request, program_id):
         )
     )
     
-def enroll_student(request, course_id):
+def enroll_student(request, program_id, encoded_course_id):
     """"
         Enroll a user in a course of the program
     """
-    
+    course_id = urllib.parse.unquote(encoded_course_id)
     
     # check if final_course_id is valid
     try:
@@ -178,13 +183,14 @@ def enroll_student(request, course_id):
     course_mode = json.loads(request.body).get('mode')
     if (course_mode != 'Do not enroll') and (course_mode != None):
         enrollment = CourseEnrollment.get_or_create_enrollment(request.user,course_key)
+        new_enrollment = not enrollment.is_active
         enrollment.activate()
         enrollment.change_mode(course_mode)
-    
-    return redirect(
-        reverse(
-            course_home_url_name(course_key), 
-            kwargs={'course_id': course_id}
-        )
-    )
+        if new_enrollment:
+            program = EolCourseProgram.objects.get(pk = program_id)
+            logger.info("User %s enrolled in %s course through eol_course_program %s (id: %s)", request.user, course_id, program.program_name, program_id)
+    answer_dict = {
+        "course_id":course_id
+        }
+    return JsonResponse(answer_dict)
     
