@@ -2,26 +2,21 @@
 
 import json
 from mock import patch, Mock
-
 from django.test import TestCase, Client
 from django.urls import reverse
-
 from common.djangoapps.util.testing import UrlResetMixin
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 from common.djangoapps.student.models import CourseEnrollment
-
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollmentFactory
 from xblock.field_data import DictFieldData
 from common.djangoapps.student.roles import CourseStaffRole
 from .eolcourseprogram import EolCourseProgramXBlock
-
 from . import views
-
 from .models import EolCourseProgram
-
 import logging
+
 logger = logging.getLogger(__name__)
 
 XBLOCK_RUNTIME_USER_ID = 99
@@ -29,26 +24,26 @@ XBLOCK_RUNTIME_USER_ID = 99
 def _generate_default_test_data(course):
     # create final course
     final_course = CourseFactory.create(
-        org='mss', 
+        org='mss',
         course='1234',
         display_name='eol final course'
     )
 
     # create 3 example courses
     course1 = CourseFactory.create(
-        org='mss', 
+        org='mss',
         course='1',
         display_name='eol 1 course'
     )
 
     course2 = CourseFactory.create(
-        org='mss', 
+        org='mss',
         course='2',
         display_name='eol 2 course'
     )
 
     course3 = CourseFactory.create(
-        org='mss', 
+        org='mss',
         course='3',
         display_name='eol 3 course'
     )
@@ -65,7 +60,7 @@ def _generate_default_test_data(course):
         CourseOverview.get_from_id(course2.id),
         CourseOverview.get_from_id(course3.id)
     )
-    return cp, final_course.id
+    return cp, final_course.id, course1.id
 
 class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
     def setUp(self):
@@ -74,7 +69,7 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         self.course = CourseFactory.create(org='mss', course='999',
                                            display_name='eol course')
 
-        self.course_program, self.final_course_id = _generate_default_test_data(self.course)
+        self.course_program, self.final_course_id, self.first_course_id = _generate_default_test_data(self.course)
         # Patch the comment client user save method so it does not try
         # to create a new cc user when creating a django user
         with patch('common.djangoapps.student.models.cc.User.save'):
@@ -116,15 +111,15 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
 
     def test_get_program_info_without_progress(self):
         """
-            Test get program info without student progress  
+            Test get program info without student progress
         """
         response = self.client.get(
             reverse(
                 'get_program_info',
-                    kwargs={
-                        'course_id': self.course.id,
-                        'program_id': 1
-                        }
+                kwargs={
+                    'course_id': self.course.id,
+                    'program_id': 1
+                }
             )
         )
         content = json.loads(response.content.decode("utf-8"))
@@ -136,7 +131,7 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
     @patch('lms.djangoapps.grades.course_grade_factory.CourseGradeFactory.read')
     def test_get_program_info_with_progress(self, coursegradefractory_read):
         """
-            Test get program info with student progress  
+            Test get program info with student progress
         """
         grade_true = Mock()
         grade_true.passed = True
@@ -148,10 +143,10 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         response = self.client.get(
             reverse(
                 'get_program_info',
-                    kwargs={
-                        'course_id': self.course.id,
-                        'program_id': 1
-                        }
+                kwargs={
+                    'course_id': self.course.id,
+                    'program_id': 1
+                }
             )
         )
         content = json.loads(response.content.decode("utf-8"))
@@ -165,10 +160,10 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         response = self.client.get(
             reverse(
                 'get_program_info',
-                    kwargs={
-                        'course_id': self.course.id,
-                        'program_id': 1
-                        }
+                kwargs={
+                    'course_id': self.course.id,
+                    'program_id': 1
+                }
             )
         )
         content = json.loads(response.content.decode("utf-8"))
@@ -196,9 +191,9 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         response = self.client.get(
             reverse(
                 'enroll_and_redirect',
-                    kwargs={
-                        'program_id': 1
-                        }
+                kwargs={
+                    'program_id': 1
+                }
             )
         )
         self.assertEqual(response.status_code, 302)
@@ -222,9 +217,9 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         response = self.client.get(
             reverse(
                 'enroll_and_redirect',
-                    kwargs={
-                        'program_id': 1
-                        }
+                kwargs={
+                    'program_id': 1
+                }
             )
         )
         self.assertEqual(response.status_code, 302)
@@ -233,6 +228,26 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         self.assertTrue(is_active)
         self.assertEqual(mode, 'verified')
 
+    def test_student_enrollment_modes(self):
+        """
+        Test student enrollment in any course of the program based on modes
+        """
+        # Test enrollment for course_1
+        response = self.client.post(
+            reverse(
+                'enroll_student',
+                kwargs={
+                    'program_id': 1,
+                    'course_id': self.first_course_id
+                }
+            ),
+            json.dumps({'mode': 'audit'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.first_course_id)
+        self.assertTrue(is_active)
+        self.assertEqual(mode, 'audit')
 
 class TestRequest(object):
     # pylint: disable=too-few-public-methods
@@ -275,8 +290,7 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         super(TestEolCourseProgramXBlock, self).setUp()
 
         # create a course
-        self.course = CourseFactory.create(org='mss', course='998',
-                                           display_name='EolCourseProgram tests')
+        self.course = CourseFactory.create(org='mss', course='998', display_name='EolCourseProgram tests')
 
         # create Xblock
         self.xblock = self.make_an_xblock()
@@ -288,35 +302,29 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
             password = 'test'
 
             # Create and enroll student
-            self.student = UserFactory(
-                username=uname, password=password, email=email)
-            CourseEnrollmentFactory(
-                user=self.student, course_id=self.course.id)
+            self.student = UserFactory(username=uname, password=password, email=email)
+            CourseEnrollmentFactory(user=self.student, course_id=self.course.id)
 
             # Create and Enroll staff user
             self.staff_user = UserFactory(
                 username='staff_user',
                 password='test',
                 email='staff@edx.org',
-                is_staff=True)
+                is_staff=True
+            )
             CourseEnrollmentFactory(
                 user=self.staff_user,
-                course_id=self.course.id)
+                course_id=self.course.id
+            )
             CourseStaffRole(self.course.id).add_users(self.staff_user)
 
             # Log the student in
             self.client = Client()
-            self.assertTrue(
-                self.client.login(
-                    username=uname,
-                    password=password))
+            self.assertTrue(self.client.login(username=uname, password=password))
 
             # Log the user staff in
             self.staff_client = Client()
-            self.assertTrue(
-                self.staff_client.login(
-                    username='staff_user',
-                    password='test'))
+            self.assertTrue(self.staff_client.login(username='staff_user', password='test'))
 
     def test_workbench_scenarios(self):
         """
@@ -380,7 +388,8 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         request.method = 'POST'
         post_data = {
             'program_id': 999,
-            'next_course_enunciate': 'test'
+            'next_course_enunciate': 'test',
+            'program_courses_enrollment_modes':json.dumps({"course_1": "audit", "course_2": "verified"})
         }
         data = json.dumps(post_data)
         request.body = data
@@ -389,3 +398,4 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         self.assertEqual(self.xblock.display_name, 'Programa de Cursos')
         self.assertEqual(self.xblock.next_course_enunciate, 'test')
         self.assertEqual(self.xblock.program_id, 999)
+        self.assertEqual(self.xblock.program_courses_enrollment_modes, {"course_1": "audit", "course_2": "verified"})

@@ -14,21 +14,21 @@
     color: #0278ab;
 }
 
-.eolcourseprogram_block p, 
-.eolcourseprogram_block h1, 
-.eolcourseprogram_block h2, 
-.eolcourseprogram_block h3, 
-.eolcourseprogram_block h4, 
+.eolcourseprogram_block p,
+.eolcourseprogram_block h1,
+.eolcourseprogram_block h2,
+.eolcourseprogram_block h3,
+.eolcourseprogram_block h4,
 .eolcourseprogram_block h5 {
     font-family: "Trebuchet MS" !important;
 }
 
-.eolcourseprogram_block .my-2 { 
+.eolcourseprogram_block .my-2 {
     margin-bottom: 0.5rem !important;
     margin-top: 0.5rem !important;
 }
 
-.eolcourseprogram_block .text-muted.font-italic.text-justify { 
+.eolcourseprogram_block .text-muted.font-italic.text-justify {
     color: #6c757d !important;
     font-style: italic !important;
     text-align: justify !important;
@@ -147,6 +147,13 @@
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #009bdd, rgba(0, 0, 0, 0));
 }
 
+.eolcourseprogram_block .error-message {
+    background: #ff6262;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin-block: 10px;
+}
 
 #settings-tab .course_programs {
     width: 45%;
@@ -157,4 +164,18 @@
 
 #settings-tab ol {
     list-style-type: decimal-leading-zero;
+}
+
+#settings-tab ol .select-enrollment{
+    padding-block: 10px;
+}
+
+#settings-tab ol .select-enrollment span{
+    margin-block-end: 10px;
+    margin-right: 10px;
+}
+
+#settings-tab ol .select-enrollment select{
+    padding: 5px;
+    font-size: 15px;
 }
