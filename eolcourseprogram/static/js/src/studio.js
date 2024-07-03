@@ -10,7 +10,7 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
     var program_courses_enrollment_modes = {};
     $("#courses_list select", $(element)).each(function(idx, el){
       program_courses_enrollment_modes[$(el).attr("name").replace(/^enrollmode_/, '')] = $("> option:selected", $(el)).val();
-    });                                            
+    });
     if (program_id == null) {
       runtime.notify('cancel', {});
       e.preventDefault();
@@ -94,7 +94,7 @@ function EolCourseProgramStudioXBlock(runtime, element, settings) {
     var create_html_select = (course_programs) => {
       var $select = $(element).find('select#course_programs_list');
       course_programs.forEach( elem => $select.append($("<option>").attr('value', elem.program_id).text(elem.program_name)) );
-      $select.change(() => {  
+      $select.change(() => {
         var select_val = $select.val();
         var index = course_programs.findIndex(elem => elem.program_id == select_val);
         create_html_courses_list(course_programs[index])

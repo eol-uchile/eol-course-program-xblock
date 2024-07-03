@@ -8,6 +8,7 @@ from django.urls import reverse
 import simplejson as json
 from six import text_type
 import logging
+
 logger = logging.getLogger(__name__)
 # Make '_' a no-op so we can scrape strings
 _ = lambda text: text
@@ -81,7 +82,7 @@ class EolCourseProgramXBlock(XBlock):
         frag = Fragment(template)
         frag.add_css(self.resource_string("static/css/eolcourseprogram.css"))
         return frag
-    
+
     def studio_view(self, context=None):
         context_html = self.get_context()
         template = self.render_template('static/html/studio.html', context_html)
@@ -106,7 +107,7 @@ class EolCourseProgramXBlock(XBlock):
         self.program_id = request.params['program_id']
         self.next_course_enunciate = request.params['next_course_enunciate']
         self.program_courses_enrollment_modes = json.loads(request.params['program_courses_enrollment_modes'])
-        logger.debug("Program courses enrollment modes: %s",self.program_courses_enrollment_modes) 
+        logger.debug("Program courses enrollment modes: %s",self.program_courses_enrollment_modes)
         return Response({'result': 'success'})
 
     def get_context(self):
@@ -114,7 +115,7 @@ class EolCourseProgramXBlock(XBlock):
             'field_program_id': self.fields['program_id'],
             'xblock': self
         }
-    
+
     def render_template(self, template_path, context):
         template_str = self.resource_string(template_path)
         template = Template(template_str)

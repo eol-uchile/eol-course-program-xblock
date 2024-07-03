@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
 from django.contrib import admin
-
 from .models import EolCourseProgram
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from django.db.models import Subquery, OuterRef

@@ -33,7 +33,7 @@ function EolCourseProgramXBlock(runtime, element, settings) {
       $span_parent.appendChild($span);
       return $span_parent;
     }
-    
+
     var create_html_courses_list = ( courses_list ) => {
       /*
         Create a list with all the course in the program
@@ -49,7 +49,7 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         $span.insertAdjacentHTML('beforeend', elem.passed ? approved_icon : incomplete_icon );
         // create 'a' element with the course home page url
         let $a = document.createElement('a');
-        
+
         $a.href = elem.course_url;
         $a.target = '_blank';
         $a.setAttribute('data-course-id', elem.course_id);
@@ -68,7 +68,7 @@ function EolCourseProgramXBlock(runtime, element, settings) {
               'Content-Type': 'application/json',
               'X-CSRFToken': $.cookie("csrftoken"), // Include the CSRF token in the headers (https://docs.djangoproject.com/en/5.0/howto/csrf/)
             },
-            mode: 'same-origin'            
+            mode: 'same-origin'
           })
           .then(async response => {
             if (response.status === 200) {
@@ -83,9 +83,6 @@ function EolCourseProgramXBlock(runtime, element, settings) {
               $(document).find('.eolcourseprogram_block').append($('<div>').addClass('error-message').text(`Ha ocurrido un error: ${error}`));
               console.error('Error:', error);
           });
-            
-          // If needed, you can also navigate to the href URL after executing the backend code
-          // window.location.href = href;
         });
 
       });
@@ -94,7 +91,7 @@ function EolCourseProgramXBlock(runtime, element, settings) {
     var create_html_final_course = (course, is_allowed) => {
       /*
         Create final course section
-        is_allowed: True if course.is_passed == course_list.length 
+        is_allowed: True if course.is_passed == course_list.length
       */
       var $list = $(element).find('#final_course_list');
       let $span = create_html_course_element(course);
@@ -134,11 +131,11 @@ function EolCourseProgramXBlock(runtime, element, settings) {
         }
       });
     }
-    
+
     // Check if the component is correctly configured
     if(settings.xblock_program_id) {
         get_program_info();
     }
-  
-    });
+
+  });
 }
