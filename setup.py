@@ -25,7 +25,7 @@ def package_data(pkg, roots):
 
 setup(
     name='eolcourseprogram-xblock',
-    version='0.1',
+    version='0.1.1',
     description='XBlock and API to show and manage course programs in the Open edX',
     license='AGPL v3',
     packages=[
