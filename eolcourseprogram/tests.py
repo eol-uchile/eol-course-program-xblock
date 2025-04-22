@@ -1,22 +1,27 @@
 # -*- coding: utf-8 -*-
-
+# Python Standard Libraries
 import json
-from mock import patch, Mock
-from django.test import TestCase, Client
+import logging
+
+# Installed packages (via pip)
+from django.test import Client
 from django.urls import reverse
+from mock import patch, Mock
+
+# Edx dependencies
+from common.djangoapps.student.models import CourseEnrollment
+from common.djangoapps.student.roles import CourseStaffRole
+from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollmentFactory
 from common.djangoapps.util.testing import UrlResetMixin
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from xblock.field_data import DictFieldData
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
-from common.djangoapps.student.models import CourseEnrollment
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
-from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollmentFactory
-from xblock.field_data import DictFieldData
-from common.djangoapps.student.roles import CourseStaffRole
+
+# Internal project dependencies
 from .eolcourseprogram import EolCourseProgramXBlock
-from . import views
 from .models import EolCourseProgram
 from .views import _has_access
-import logging
 
 logger = logging.getLogger(__name__)
 
