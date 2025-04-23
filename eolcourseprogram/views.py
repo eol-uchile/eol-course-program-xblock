@@ -172,7 +172,7 @@ def enroll_student(request, program_id, course_id):
     try:
         course_key = CourseKey.from_string(course_id)
     except InvalidKeyError:
-        raise HttpResponse(status=400,content=u"Invalid course_key")
+        return HttpResponse(status=400,content=u"Invalid course_key")
 
     course_mode = json.loads(request.body).get('mode')
     if (course_mode != 'Do not enroll') and (course_mode != None):
