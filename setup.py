@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def package_data(pkg, roots):
@@ -25,12 +25,12 @@ def package_data(pkg, roots):
 
 setup(
     name='eolcourseprogram-xblock',
-    version='0.1.1',
+    version='0.2.0',
+    author="Oficina EOL UChile",
+    author_email="eol-ing@uchile.cl",
     description='XBlock and API to show and manage course programs in the Open edX',
     license='AGPL v3',
-    packages=[
-        'eolcourseprogram',
-    ],
+    packages=find_packages(),
     install_requires=[
         'XBlock',
     ],

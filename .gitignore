@@ -61,10 +61,6 @@ target/
 .ipynb_checkpoints
 
 
-# openedx test files
-test_root/
-setup.cfg
-
 # .bak files
 
 *.bak

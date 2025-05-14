@@ -1,21 +1,27 @@
 # -*- coding: utf-8 -*-
-
+# Python Standard Libraries
 import json
-from mock import patch, Mock
-from django.test import TestCase, Client
+import logging
+
+# Installed packages (via pip)
+from django.test import Client
 from django.urls import reverse
+from mock import patch, Mock
+
+# Edx dependencies
+from common.djangoapps.student.models import CourseEnrollment
+from common.djangoapps.student.roles import CourseStaffRole
+from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollmentFactory
 from common.djangoapps.util.testing import UrlResetMixin
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from xblock.field_data import DictFieldData
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
-from common.djangoapps.student.models import CourseEnrollment
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
-from common.djangoapps.student.tests.factories import UserFactory, CourseEnrollmentFactory
-from xblock.field_data import DictFieldData
-from common.djangoapps.student.roles import CourseStaffRole
+
+# Internal project dependencies
 from .eolcourseprogram import EolCourseProgramXBlock
-from . import views
 from .models import EolCourseProgram
-import logging
+from .views import _has_access
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +115,44 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         self.assertEqual(content[0]["program_name"], 'Program name 1')
         self.assertEqual(len(content[0]["courses_list"]), 4)
 
+    def test_get_course_programs_wrong_method(self):
+        """
+            Test get course programs wrong method
+        """
+        response = self.client.post(
+            reverse(
+                'get_course_programs',
+                    kwargs={'course_id': self.course.id}
+            )
+        )
+        self.assertEqual(response.status_code, 400)
+    
+    def test_get_course_programs_wrong_course_id(self):
+        """
+            Test get course programs wrong course_id
+        """
+        response = self.client.post(
+            reverse(
+                'get_course_programs',
+                    kwargs={'course_id': self.course.id}
+            )
+        )
+        self.assertEqual(response.status_code, 400)
+    
+    @patch('eolcourseprogram.views.EolCourseProgram.objects.filter')
+    def test_get_course_programs_object_filter_error(self, mock_EolCourseProgram_filter):
+        """
+            Test get course programs wrong EolCourseProgram.objects.filter
+        """
+        mock_EolCourseProgram_filter.return_value = None
+        response = self.client.get(
+            reverse(
+                'get_course_programs',
+                    kwargs={'course_id': self.course.id}
+            )
+        )
+        self.assertEqual(response.status_code, 500)
+
     def test_get_program_info_without_progress(self):
         """
             Test get program info without student progress
@@ -127,6 +171,36 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         self.assertEqual(len(content["courses_list"]), 4)
         self.assertEqual(content["approved_count"], 0)
         self.assertEqual(content["final_course_allowed"], False)
+
+    def test_get_program_info_with_wrong_send_method(self):
+        """
+            Test get program info with wrong method
+        """
+        response = self.client.post(
+            reverse(
+                'get_program_info',
+                kwargs={
+                    'course_id': self.course.id,
+                    'program_id': 1
+                }
+            )
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_program_info_with_wrong_program_id(self):
+        """
+            Test get program info with wrong program_id
+        """
+        response = self.client.get(
+            reverse(
+                'get_program_info',
+                kwargs={
+                    'course_id': self.course.id,
+                    'program_id': 6
+                }
+            )
+        )
+        self.assertEqual(response.status_code, 409)
 
     @patch('lms.djangoapps.grades.course_grade_factory.CourseGradeFactory.read')
     def test_get_program_info_with_progress(self, coursegradefractory_read):
@@ -227,6 +301,25 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.final_course_id)
         self.assertTrue(is_active)
         self.assertEqual(mode, 'verified')
+    
+    def test_enroll_and_redirect_program_without_final_course_info(self):
+        """
+            Test Enroll and redirect when a program have final course as None
+        """
+         # create course program
+        EolCourseProgram.objects.create(
+            program_name    = "Program Name 2",
+            final_course    = None,
+        )
+        response = self.client.get(
+            reverse(
+                'enroll_and_redirect',
+                kwargs={
+                    'program_id': 2
+                }
+            )
+        )
+        self.assertEqual(response.status_code, 404)
 
     def test_student_enrollment_modes(self):
         """
@@ -248,6 +341,23 @@ class TestEolCourseProgramAPI(UrlResetMixin, ModuleStoreTestCase):
         mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.student, self.first_course_id)
         self.assertTrue(is_active)
         self.assertEqual(mode, 'audit')
+
+    def test_student_enrollment_modes_with_wrong_course_id(self):
+        """
+        Test student enrollment with wrong course id
+        """
+        response = self.client.post(
+            reverse(
+                'enroll_student',
+                kwargs={
+                    'program_id': 1,
+                    'course_id': '11111111111111'
+                }
+            ),
+            json.dumps({'mode': 'audit'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
 
 class TestRequest(object):
     # pylint: disable=too-few-public-methods
@@ -399,3 +509,21 @@ class TestEolCourseProgramXBlock(UrlResetMixin, ModuleStoreTestCase):
         self.assertEqual(self.xblock.next_course_enunciate, 'test')
         self.assertEqual(self.xblock.program_id, 999)
         self.assertEqual(self.xblock.program_courses_enrollment_modes, {"course_1": "audit", "course_2": "verified"})
+
+    def test_studio_view_render(self):
+        """
+            Check if xblock studio template loaded correctly
+        """
+        studio_view = self.xblock.studio_view()
+        studio_view_html = studio_view.content
+        self.assertIn('id="settings-tab"', studio_view_html)
+
+    def test_has_access_wrong_course_id(self):
+        """
+            Check if _has_access worked correctly with wrong course_id
+        """
+        request = TestRequest()
+        request.method = 'POST'
+        course_id = '1111111111'
+        response = _has_access(request,course_id)
+        self.assertFalse(response)

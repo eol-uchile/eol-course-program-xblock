@@ -1,22 +1,28 @@
 # -*- coding: utf-8 -*-
-
+# Python Standard Libraries
 import json
-from django.http import HttpResponse, JsonResponse, Http404
-from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
-from common.djangoapps.student.models import CourseEnrollment
-from common.djangoapps.course_modes.models import CourseMode
-from openedx.features.course_experience import course_home_url_name
-from django.urls import reverse
-from django.shortcuts import redirect
-from opaque_keys.edx.keys import CourseKey
-from opaque_keys import InvalidKeyError
-from django.contrib.auth.models import User
-from django.core.exceptions import FieldError
-from lms.djangoapps.courseware.courses import get_course_with_access
-from lms.djangoapps.courseware.access import has_access
-from .models import EolCourseProgram
 import traceback
 import logging
+
+# Installed packages (via pip)
+from django.http import HttpResponse, JsonResponse, Http404
+from django.urls import reverse
+from django.shortcuts import redirect
+from django.contrib.auth.models import User
+
+# Edx dependencies
+from common.djangoapps.course_modes.models import CourseMode
+from common.djangoapps.student.models import CourseEnrollment
+from lms.djangoapps.courseware.access import has_access
+from lms.djangoapps.courseware.courses import get_course_with_access
+from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
+from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import CourseKey
+from openedx.features.course_experience import course_home_url_name
+
+# Internal project dependencies
+from .models import EolCourseProgram
+
 
 logger = logging.getLogger(__name__)
 
@@ -172,7 +178,7 @@ def enroll_student(request, program_id, course_id):
     try:
         course_key = CourseKey.from_string(course_id)
     except InvalidKeyError:
-        raise HttpResponse(status=400,content=u"Invalid course_key")
+        return HttpResponse(status=400,content=u"Invalid course_key")
 
     course_mode = json.loads(request.body).get('mode')
     if (course_mode != 'Do not enroll') and (course_mode != None):
